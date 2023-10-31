@@ -1,7 +1,7 @@
 
 var nopt = require('nopt')
-var duo_api = require('../')
-var moment = require('moment')
+const duo_api = require('@duosecurity/duo_api')
+const moment = require('moment')
 var parsed = nopt({
   'ikey': [String],
   'skey': [String],
