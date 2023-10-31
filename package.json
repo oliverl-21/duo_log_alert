@@ -27,7 +27,10 @@
     "optionalDependencies": {
         "nopt": ">= 2.1.2"
     },
-    "dependencies": {},
+    "dependencies": {
+        "@slack/webhook": "^7.0.1",
+        "moment": "^2.29.4"
+    },
     "keywords": [
         "Duo Security",
         "Two-Factor Authentication"
