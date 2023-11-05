@@ -10,6 +10,7 @@ var parsed = nopt({
 }, [], process.argv, 0)
 const { IncomingWebhook } = require('@slack/webhook')
 moment.locale('de')
+var message = ''
 var timenow = moment().valueOf()
 var timebefore = moment().subtract(3, 'days').valueOf()
 
@@ -64,7 +65,9 @@ const reasoncodes = {
   error: '¯\\_(ツ)_/¯',
   locked_out: 'User locked',
   user_disabled: 'User disabled',
-  user_cancelled: 'User cancelled Request'
+  user_cancelled: 'User cancelled Request',
+  no_response: 'User got distracted'
+
 }
 
 // reasconcode conversion function
@@ -72,7 +75,7 @@ const errorlookup = (reason) => reasoncodes[reason] || 'unknown Reason'
 
 var requirements_met = (duo_ikey && duo_skey && duo_host)
 if (!requirements_met) {
-  console.error('Missing required option.\n')
+  console.error(hook + 'Missing required option.\n')
 }
 
 if (parsed.help || !requirements_met) {
@@ -99,16 +102,17 @@ Options:
 }
 
 // Slack Webhook function
-const url = 'https://hooks.slack.com/services/' + parsed.hook
+const url = 'https://hooks.slack.com/services/' + hook
 const webhook = new IncomingWebhook(url)
 function send_message(message) {
-  console.log(message)
-  if (hook != '' || hook !== 'undefined') {
-  async () => {await webhook.send({text: message})}
+  if (hook != '' && typeof hook !== 'undefined') {
+  (async () => {await webhook.send({text: message});})();
+  } else {
+    console.log(message);
   }
 }
 
-// Send the notification
+// gather Data and format Message
 var client = new duo_api.Client(duo_ikey, duo_skey, duo_host)
 client.jsonApiCall(
   'GET', '/admin/v2/logs/authentication', {'maxtime': timenow, 'mintime': timebefore, 'results': 'denied,fraud'},
