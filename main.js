@@ -1,85 +1,90 @@
-var nopt = require('nopt')
-const duo_api = require('@duosecurity/duo_api')
-const moment = require('moment')
-require('dotenv').config()
-var parsed = nopt({
-  'ikey': [String],
-  'skey': [String],
-  'host': [String],
-  'hook': [String]
-}, [], process.argv, 0)
-const { IncomingWebhook } = require('@slack/webhook')
-moment.locale('de')
-var message = ''
-var timenow = moment().valueOf()
-var timebefore = moment().subtract(3, 'days').valueOf()
+var nopt = require("nopt");
+const duo_api = require("@duosecurity/duo_api");
+const moment = require("moment");
+require("dotenv").config();
+var parsed = nopt(
+  {
+    ikey: [String],
+    skey: [String],
+    host: [String],
+    hook: [String],
+  },
+  [],
+  process.argv,
+  0,
+);
+const { IncomingWebhook } = require("@slack/webhook");
+moment.locale("de");
+var timenow = moment().valueOf();
+var timebefore = moment().subtract(3, "days").valueOf();
 
-if ('duo_ikey' in process.env) {
-  var duo_ikey = process.env.duo_ikey
-} else if (parsed.ikey != '' || parsed.ikey !== 'undefined') {
-  var duo_ikey = parsed.ikey
+if ("duo_ikey" in process.env) {
+  var duo_ikey = process.env.duo_ikey;
+} else if (parsed.ikey != "" || parsed.ikey !== "undefined") {
+  var duo_ikey = parsed.ikey;
 } else {
-  console.log('DUO ikey is missing')
-  proces.exit(1)
+  console.log("DUO ikey is missing");
+  proces.exit(1);
 }
 
-if ('duo_skey' in process.env) {
-  var duo_skey = process.env.duo_skey
-} else if (parsed.skey != '' || parsed.skey !== 'undefined') {
-  var duo_skey = parsed.skey
+if ("duo_skey" in process.env) {
+  var duo_skey = process.env.duo_skey;
+} else if (parsed.skey != "" || parsed.skey !== "undefined") {
+  var duo_skey = parsed.skey;
 } else {
-  console.log('DUO skey is missing')
-  process.exit(1)
+  console.log("DUO skey is missing");
+  process.exit(1);
 }
 
-if ('duo_host' in process.env) {
-  var duo_host = process.env.duo_host
-} else if (parsed.host != '' || parsed.host !== 'undefined') {
-  var duo_host = parsed.host
+if ("duo_host" in process.env) {
+  var duo_host = process.env.duo_host;
+} else if (parsed.host != "" || parsed.host !== "undefined") {
+  var duo_host = parsed.host;
 } else {
-  console.log('DUO host is missing')
-  process.exit(1)
+  console.log("DUO host is missing");
+  process.exit(1);
 }
 
-if ('hook' in process.env) {
-  var hook = process.env.hook
-} else if (parsed.hook != '' || parsed.hook !== 'undefined') {
-  var hook = parsed.hook
+if ("hook" in process.env) {
+  var hook = process.env.hook;
+} else if (parsed.hook != "" || parsed.hook !== "undefined") {
+  var hook = parsed.hook;
 } else {
-  console.log('Slack hook is missing')
-  process.exit(1)
+  console.log("Slack hook is missing");
+  process.exit(1);
 }
 
-// resoncode lookuptable
+// reasoncode lookuptable
 const reasoncodes = {
-  user_mistake: 'Fat Fingered',
-  user_marked_fraud: 'Fraud ALARM!',
-  user_approved: 'Good Boy!',
-  location_restricted: 'GEO restricted',
-  platform_restricted: 'Posture Error: OS not allowed',
-  version_restricted: 'Posture Error: OS Version not allowed',
-  rooted_device: 'Script kiddy with Mobile Device (rooted)',
-  no_screen_lock: 'Posture Error: no Screen Lock',
-  touch_id_disabled: 'Posture Error: iOS no biometry',
-  no_disk_encryption: 'Posture Error: no disk encryption',
-  error: '¯\\_(ツ)_/¯',
-  locked_out: 'User locked',
-  user_disabled: 'User disabled',
-  user_cancelled: 'User cancelled Request',
-  no_response: 'User got distracted'
-
-}
+  user_mistake: "Fat Fingered",
+  user_marked_fraud: "Fraud ALARM!",
+  user_approved: "Good Boy!",
+  location_restricted: "GEO restricted",
+  platform_restricted: "Posture Error: OS not allowed",
+  version_restricted: "Posture Error: OS Version not allowed",
+  rooted_device: "Script kiddy with Mobile Device (rooted)",
+  no_screen_lock: "Posture Error: no Screen Lock",
+  touch_id_disabled: "Posture Error: iOS no biometry",
+  no_disk_encryption: "Posture Error: no disk encryption",
+  error: "¯\\_(ツ)_/¯",
+  locked_out: "User locked",
+  user_disabled: "User disabled",
+  user_cancelled: "User cancelled Request",
+  no_response: "User got distracted",
+};
 
 // reasconcode conversion function
-const errorlookup = (reason) => reasoncodes[reason] || 'unknown Reason'
+const errorlookup = (reason) => reasoncodes[reason] || "unknown Reason";
 
-var requirements_met = (duo_ikey && duo_skey && duo_host)
+var requirements_met = duo_ikey && duo_skey && duo_host;
 if (!requirements_met) {
-  console.error(hook + 'Missing required option.\n')
+  console.error(hook + "Missing required option.\n");
 }
 
 if (parsed.help || !requirements_met) {
-  console.log(function () { /*
+  console.log(
+    function () {
+      /*
 Usage:
 
     duo_admin.js --ikey IKEY --skey SKEY --host HOST
@@ -93,45 +98,62 @@ Options:
     --host    API hostname (required)
     --hook    Message Webhook
     --help    Print this help.
-*/ }.toString().split(/\n/).slice(1, -1).join('\n'))
+*/
+    }
+      .toString()
+      .split(/\n/)
+      .slice(1, -1)
+      .join("\n"),
+  );
   if (parsed.help) {
-    process.exit(0)
+    process.exit(0);
   } else {
-    process.exit(1)
+    process.exit(1);
   }
 }
 
 // Slack Webhook function
-const url = 'https://hooks.slack.com/services/' + hook
-const webhook = new IncomingWebhook(url)
+const url = "https://hooks.slack.com/services/" + hook;
+const webhook = new IncomingWebhook(url);
 function send_message(message) {
-  if (hook != '' && typeof hook !== 'undefined') {
-  (async () => {await webhook.send({text: message});})();
+  if (hook != "" && typeof hook !== "undefined") {
+    (async () => {
+      await webhook.send({ text: message });
+    })();
   } else {
     console.log(message);
   }
 }
 
 // gather Data and format Message
-var client = new duo_api.Client(duo_ikey, duo_skey, duo_host)
+var client = new duo_api.Client(duo_ikey, duo_skey, duo_host);
 client.jsonApiCall(
-  'GET', '/admin/v2/logs/authentication', {'maxtime': timenow, 'mintime': timebefore, 'results': 'denied,fraud'},
+  "GET",
+  "/admin/v2/logs/authentication",
+  { maxtime: timenow, mintime: timebefore, results: "denied,fraud" },
   function (res) {
-    if (res.stat !== 'OK') {
-      console.error('API call returned error: ' + res.message)
-      process.exit(1)
+    if (res.stat !== "OK") {
+      console.error("API call returned error: " + res.message);
+      process.exit(1);
     }
-    res = res.response
+    res = res.response;
     for (var i in res) {
       for (n = 0; n < res[i].length; n++) {
-         let message = send_message(
-          'User: ' + res[i][n].user.name + ', ' + 
-          '\nReason: ' + errorlookup(res[i][n].reason) + ' at ' + moment(res[i][n].isotimestamp).format('LTS') + 
-          '\nfrom IP: ' + res[i][n].access_device.ip + 
-          '\nAccess Location: ' + res[i][n].access_device.location.country +
-          '\n'
-          );
+        var message = send_message(
+          "User: " +
+            res[i][n].user.name +
+            ", " +
+            "\nReason: " +
+            errorlookup(res[i][n].reason) +
+            " at " +
+            moment(res[i][n].isotimestamp).format("LTS") +
+            "\nfrom IP: " +
+            res[i][n].access_device.ip +
+            "\nAccess Location: " +
+            res[i][n].access_device.location.country +
+            "\n",
+        );
       }
     }
-  }
-)
+  },
+);
