@@ -1,6 +1,6 @@
 {
   "optionalDependencies": {
-    "nopt": ">= 8.0.0"
+    "nopt": ">= 8.1.0"
   },
   "dependencies": {
     "@duosecurity/duo_api": "^1.4.0",
