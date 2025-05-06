@@ -3,7 +3,7 @@
     "nopt": ">= 8.1.0"
   },
   "dependencies": {
-    "@duosecurity/duo_api": "^1.4.0",
+    "@duosecurity/duo_api": "^1.5.0",
     "@slack/webhook": "^7.0.5",
     "dotenv": "^16.5.0",
     "moment": "^2.30.1"
