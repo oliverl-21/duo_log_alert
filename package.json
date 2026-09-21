@@ -6,6 +6,6 @@
     "@duosecurity/duo_api": "^1.6.0",
     "@slack/webhook": "^8.0.2",
     "dotenv": "^18.0.0",
-    "moment": "^2.30.1"
+    "moment": "^2.31.0"
   }
 }
