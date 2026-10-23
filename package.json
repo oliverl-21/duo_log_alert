@@ -5,7 +5,7 @@
   "dependencies": {
     "@duosecurity/duo_api": "^1.6.0",
     "@slack/webhook": "^8.0.2",
-    "dotenv": "^18.0.5",
+    "dotenv": "^18.0.8",
     "moment": "^2.31.0"
   }
 }
